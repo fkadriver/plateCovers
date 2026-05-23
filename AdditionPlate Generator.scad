@@ -93,7 +93,7 @@ bevel_r   = 0.75;  // minkowski sphere radius for rim edge rounding
 
 module plate_gang(n) {
 	top   = top_type(n);
-	x_off = l_offset[plate_size] + switch_offset * n;
+	x_off = l_offset[plate_size] + switch_offset * n - solid_plate_width/2;
 
 	if (top == "toggle") {
 		translate([x_off, 0, 0]) toggle_screws();
@@ -119,33 +119,35 @@ module plate_gang(n) {
 module plate_profile_cuts() {
 	pw = solid_plate_width;
 	ph = height_sizes[plate_size];
+	hw = pw / 2;
+	hh = ph / 2;
 	e  = 5;
 	r  = profile_r;
 
 	if (edge_profile == "crown") {
-		translate([ 0, -e, 6]) rotate([-90,0,0]) cylinder(r=r,h=ph+e*2,$fn=32);
-		translate([pw, -e, 6]) rotate([-90,0,0]) cylinder(r=r,h=ph+e*2,$fn=32);
-		translate([-e,  0, 6]) rotate([0, 90,0]) cylinder(r=r,h=pw+e*2,$fn=32);
-		translate([-e, ph, 6]) rotate([0, 90,0]) cylinder(r=r,h=pw+e*2,$fn=32);
-		translate([ 0,  0, 6]) sphere(r=r,$fn=32);
-		translate([ 0, ph, 6]) sphere(r=r,$fn=32);
-		translate([pw,  0, 6]) sphere(r=r,$fn=32);
-		translate([pw, ph, 6]) sphere(r=r,$fn=32);
+		translate([-hw, -e, 6]) rotate([-90,0,0]) cylinder(r=r,h=ph+e*2,$fn=32);
+		translate([ hw, -e, 6]) rotate([-90,0,0]) cylinder(r=r,h=ph+e*2,$fn=32);
+		translate([-e, -hh, 6]) rotate([0, 90,0]) cylinder(r=r,h=pw+e*2,$fn=32);
+		translate([-e,  hh, 6]) rotate([0, 90,0]) cylinder(r=r,h=pw+e*2,$fn=32);
+		translate([-hw, -hh, 6]) sphere(r=r,$fn=32);
+		translate([-hw,  hh, 6]) sphere(r=r,$fn=32);
+		translate([ hw, -hh, 6]) sphere(r=r,$fn=32);
+		translate([ hw,  hh, 6]) sphere(r=r,$fn=32);
 	}
 	else if (edge_profile == "fillet") {
-		translate([0,-e,6-r]) difference() {
+		translate([-hw,-e,6-r]) difference() {
 			cube([r,ph+e*2,r]);
 			translate([r,-1,0]) rotate([-90,0,0]) cylinder(r=r,h=ph+e*2+2,$fn=32);
 		}
-		translate([pw-r,-e,6-r]) difference() {
+		translate([hw-r,-e,6-r]) difference() {
 			cube([r,ph+e*2,r]);
 			translate([0,-1,0]) rotate([-90,0,0]) cylinder(r=r,h=ph+e*2+2,$fn=32);
 		}
-		translate([-e,0,6-r]) difference() {
+		translate([-e,-hh,6-r]) difference() {
 			cube([pw+e*2,r,r]);
 			translate([-1,r,0]) rotate([0,90,0]) cylinder(r=r,h=pw+e*2+2,$fn=32);
 		}
-		translate([-e,ph-r,6-r]) difference() {
+		translate([-e,hh-r,6-r]) difference() {
 			cube([pw+e*2,r,r]);
 			translate([-1,0,0]) rotate([0,90,0]) cylinder(r=r,h=pw+e*2+2,$fn=32);
 		}
@@ -155,34 +157,38 @@ module plate_profile_cuts() {
 module plate_profile_additions() {
 	pw = solid_plate_width;
 	ph = height_sizes[plate_size];
+	hw = pw / 2;
+	hh = ph / 2;
 	if (edge_profile == "crown") {
 		bead_inset = profile_r + 2*bead_r;
 		inner_x = pw - 2*bead_inset;
 		inner_y = ph - 2*bead_inset;
-		translate([bead_inset, bead_inset, 6]) rotate([-90,0,0]) cylinder(r=bead_r,h=inner_y,$fn=32);
-		translate([pw-bead_inset, bead_inset, 6]) rotate([-90,0,0]) cylinder(r=bead_r,h=inner_y,$fn=32);
-		translate([bead_inset, bead_inset, 6]) rotate([0, 90,0]) cylinder(r=bead_r,h=inner_x,$fn=32);
-		translate([bead_inset, ph-bead_inset, 6]) rotate([0, 90,0]) cylinder(r=bead_r,h=inner_x,$fn=32);
-		translate([bead_inset,    bead_inset,    6]) sphere(r=bead_r,$fn=32);
-		translate([bead_inset,    ph-bead_inset, 6]) sphere(r=bead_r,$fn=32);
-		translate([pw-bead_inset, bead_inset,    6]) sphere(r=bead_r,$fn=32);
-		translate([pw-bead_inset, ph-bead_inset, 6]) sphere(r=bead_r,$fn=32);
+		translate([-hw+bead_inset, -hh+bead_inset, 6]) rotate([-90,0,0]) cylinder(r=bead_r,h=inner_y,$fn=32);
+		translate([ hw-bead_inset, -hh+bead_inset, 6]) rotate([-90,0,0]) cylinder(r=bead_r,h=inner_y,$fn=32);
+		translate([-hw+bead_inset, -hh+bead_inset, 6]) rotate([0, 90,0]) cylinder(r=bead_r,h=inner_x,$fn=32);
+		translate([-hw+bead_inset,  hh-bead_inset, 6]) rotate([0, 90,0]) cylinder(r=bead_r,h=inner_x,$fn=32);
+		translate([-hw+bead_inset, -hh+bead_inset, 6]) sphere(r=bead_r,$fn=32);
+		translate([-hw+bead_inset,  hh-bead_inset, 6]) sphere(r=bead_r,$fn=32);
+		translate([ hw-bead_inset, -hh+bead_inset, 6]) sphere(r=bead_r,$fn=32);
+		translate([ hw-bead_inset,  hh-bead_inset, 6]) sphere(r=bead_r,$fn=32);
 	}
 }
 
 module plate_profile_fleurs() {
 	pw = solid_plate_width;
 	ph = height_sizes[plate_size];
+	hw = pw / 2;
+	hh = ph / 2;
 	bead_inset = profile_r + 2*bead_r;
 	fi = bead_inset + fleur_size/2;
 	if (edge_profile == "crown") {
 		// pw along X (gang direction), ph along Y (fixed height)
 		// Fleurs point outward toward their corner (45° diagonals)
 		corners = [
-			[fi,    fi,       135],  // bottom-left  → SW
-			[fi,    ph-fi,     45],  // top-left     → NW  (correct)
-			[pw-fi, fi,      -135],  // bottom-right → SE  (correct)
-			[pw-fi, ph-fi,    -45],  // top-right    → NE
+			[-hw+fi, -hh+fi,   135],  // bottom-left  → SW
+			[-hw+fi,  hh-fi,    45],  // top-left     → NW
+			[ hw-fi, -hh+fi,  -135],  // bottom-right → SE
+			[ hw-fi,  hh-fi,   -45],  // top-right    → NE
 		];
 		for (c = corners) {
 			translate([c[0], c[1], 6])
@@ -198,6 +204,7 @@ module plate_profile_fleurs() {
 module vertical_scroll() {
 	pw = solid_plate_width;
 	ph = height_sizes[plate_size];
+	hw = pw / 2;
 	bead_inset = profile_r + 2*bead_r;
 	fi = bead_inset + fleur_size/2;
 	if (edge_profile == "crown") {
@@ -210,7 +217,7 @@ module vertical_scroll() {
 		scroll_cx = fi - scroll_w/2;
 
 		// Left edge
-		translate([scroll_cx, ph/2, 6])
+		translate([-hw+scroll_cx, 0, 6])
 			linear_extrude(height=bead_r, scale=scroll_scale)
 				resize([scroll_w, scroll_len])
 					translate([-svg_w/2, -svg_h/2])
@@ -218,7 +225,7 @@ module vertical_scroll() {
 						import("LeftS.svg");
 
 		// Right edge: mirror of left
-		translate([pw-scroll_cx, ph/2, 6])
+		translate([hw-scroll_cx, 0, 6])
 			mirror([1, 0, 0])
 				linear_extrude(height=bead_r, scale=scroll_scale)
 					resize([scroll_w, scroll_len])
@@ -240,32 +247,34 @@ module h_scroll_pair(rot) {
 
 module horizontal_scroll() {
 	if (plate_width >= 2) {
-		pw = solid_plate_width;
 		ph = height_sizes[plate_size];
+		hh = ph / 2;
 		bead_inset = profile_r + 2*bead_r;
 		fi = bead_inset + fleur_size/2;
-		cx = pw / 2;
 
-		translate([cx, ph - fi, 6]) h_scroll_pair(315);  // top pair
-		translate([cx, fi,      6]) h_scroll_pair(315);  // bottom pair
+		translate([0,  hh-fi, 6]) h_scroll_pair(315);  // top pair
+		translate([0, -hh+fi, 6]) h_scroll_pair(315);  // bottom pair
 	}
 }
 
 module plate_body() {
+	pw = solid_plate_width;
+	ph = height_sizes[plate_size];
 	difference() {
-		cube([solid_plate_width, height_sizes[plate_size], 6]);
+		translate([-pw/2, -ph/2, 0]) cube([pw, ph, 6]);
 		plate_profile_cuts();
 	}
 }
 
 module plate_inner() {
+	pw = solid_plate_width;
+	ph = height_sizes[plate_size];
 	ts = plate_width < len(thinner_offset)
 	   ? thinner_offset[plate_width]
 	   : thinner_offset[len(thinner_offset)-1];
 	scale([ts, 0.95, 1])
-	translate([3, 3, 0])
 	difference() {
-		cube([solid_plate_width, height_sizes[plate_size], 6]);
+		translate([-pw/2, -ph/2, 0]) cube([pw, ph, 6]);
 		plate_profile_cuts();
 	}
 }
@@ -275,24 +284,24 @@ module plate_inner() {
 ////////////////
 
 module box_screws() {
-	translate([0, height_sizes[plate_size]/2 + 41.67125, -1]) cylinder(r=2, h=10, $fn=12);
-	translate([0, height_sizes[plate_size]/2 + 41.67125,  3.5]) cylinder(r1=2, r2=3.3, h=3);
-	translate([0, height_sizes[plate_size]/2 - 41.67125, -1]) cylinder(r=2, h=10, $fn=12);
-	translate([0, height_sizes[plate_size]/2 - 41.67125,  3.5]) cylinder(r1=2, r2=3.3, h=3);
+	translate([0,  41.67125, -1]) cylinder(r=2, h=10, $fn=12);
+	translate([0,  41.67125,  3.5]) cylinder(r1=2, r2=3.3, h=3);
+	translate([0, -41.67125, -1]) cylinder(r=2, h=10, $fn=12);
+	translate([0, -41.67125,  3.5]) cylinder(r1=2, r2=3.3, h=3);
 }
 
 module rocker_screws() {
-	translate([0, height_sizes[plate_size]/2 + 48.41875, -1]) cylinder(r=2, h=10, $fn=12);
-	translate([0, height_sizes[plate_size]/2 + 48.41875,  3.5]) cylinder(r1=2, r2=3.3, h=3);
-	translate([0, height_sizes[plate_size]/2 - 48.41875, -1]) cylinder(r=2, h=10, $fn=12);
-	translate([0, height_sizes[plate_size]/2 - 48.41875,  3.5]) cylinder(r1=2, r2=3.3, h=3);
+	translate([0,  48.41875, -1]) cylinder(r=2, h=10, $fn=12);
+	translate([0,  48.41875,  3.5]) cylinder(r1=2, r2=3.3, h=3);
+	translate([0, -48.41875, -1]) cylinder(r=2, h=10, $fn=12);
+	translate([0, -48.41875,  3.5]) cylinder(r1=2, r2=3.3, h=3);
 }
 
 module toggle_screws() {
-	translate([0, height_sizes[plate_size]/2 + 30.1625, -1]) cylinder(r=2, h=10, $fn=12);
-	translate([0, height_sizes[plate_size]/2 + 30.1625,  3.5]) cylinder(r1=2, r2=3.3, h=3);
-	translate([0, height_sizes[plate_size]/2 - 30.1625, -1]) cylinder(r=2, h=10, $fn=12);
-	translate([0, height_sizes[plate_size]/2 - 30.1625,  3.5]) cylinder(r1=2, r2=3.3, h=3);
+	translate([0,  30.1625, -1]) cylinder(r=2, h=10, $fn=12);
+	translate([0,  30.1625,  3.5]) cylinder(r1=2, r2=3.3, h=3);
+	translate([0, -30.1625, -1]) cylinder(r=2, h=10, $fn=12);
+	translate([0, -30.1625,  3.5]) cylinder(r1=2, r2=3.3, h=3);
 }
 
   ///////////////////
@@ -302,28 +311,28 @@ module toggle_screws() {
 module hole(hole_type) {
 
 	if (hole_type == "toggle") {
-		translate([0, height_sizes[plate_size]/2, 0]) cube([10.3188, 23.8125, 15], center=true);
+		cube([10.3188, 23.8125, 15], center=true);
 	}
 
 	if (hole_type == "rocker") {
-		translate([0, height_sizes[plate_size]/2, 0]) cube([33.3, 67.1, 15], center=true);
+		cube([33.3, 67.1, 15], center=true);
 	}
 
 	if (hole_type == "outlet") {
-		translate([0, height_sizes[plate_size]/2 + 19.3915, 0])
+		translate([0,  19.3915, 0])
 			difference() {
 				cylinder(r=17.4625, h=15, center=true);
 				translate([-15,-24.2875,-2]) cube([37,10,15]);
 				translate([-15, 14.2875,-2]) cube([37,10,15]);
 			}
-		translate([0, height_sizes[plate_size]/2 - 19.3915, 0])
+		translate([0, -19.3915, 0])
 			difference() {
 				cylinder(r=17.4625, h=15, center=true);
 				translate([-15,-24.2875,-2]) cube([37,10,15]);
 				translate([-15, 14.2875,-2]) cube([37,10,15]);
 			}
-		translate([0, height_sizes[plate_size]/2, -1]) cylinder(r=2, h=10);
-		translate([0, height_sizes[plate_size]/2,  3.5]) cylinder(r1=2, r2=3.3, h=3);
+		translate([0, 0, -1]) cylinder(r=2, h=10);
+		translate([0, 0,  3.5]) cylinder(r1=2, r2=3.3, h=3);
 	}
 
 	// "blank" and "none": no cutout
@@ -346,41 +355,39 @@ module _outlet_dshape(r, cut_y, h) {
 // Outer shell is a Minkowski sum with sphere(bevel_r) to round all top/side
 // edges; the inner cutout stays straight so the opening stays crisp.
 module hole_emboss(hole_type) {
-	ph = height_sizes[plate_size];
 	br = bevel_r;
 
 	if (hole_type == "toggle") {
-		w = 10.3188; hh = 23.8125;
-		// local origin = outer-frame corner; bottom of frame is at z=6
-		translate([-w/2 - emboss_w, ph/2 - hh/2 - emboss_w, 6])
+		w = 10.3188; hole_h = 23.8125;
+		translate([-w/2 - emboss_w, -hole_h/2 - emboss_w, 6])
 			difference() {
 				// Outer shell: shrink core by br so minkowski expands back to emboss_w
 				minkowski() {
 					translate([br, br, 0])
-						cube([w + 2*(emboss_w - br), hh + 2*(emboss_w - br), emboss_h - br]);
+						cube([w + 2*(emboss_w - br), hole_h + 2*(emboss_w - br), emboss_h - br]);
 					sphere(r=br, $fn=16);
 				}
 				// Inner cutout: straight walls flush with hole edge
-				translate([emboss_w, emboss_w, -br - 1]) cube([w, hh, emboss_h + br + 2]);
+				translate([emboss_w, emboss_w, -br - 1]) cube([w, hole_h, emboss_h + br + 2]);
 			}
 	}
 
 	if (hole_type == "rocker") {
-		w = 33.3; hh = 67.1;
-		translate([-w/2 - emboss_w, ph/2 - hh/2 - emboss_w, 6])
+		w = 33.3; hole_h = 67.1;
+		translate([-w/2 - emboss_w, -hole_h/2 - emboss_w, 6])
 			difference() {
 				minkowski() {
 					translate([br, br, 0])
-						cube([w + 2*(emboss_w - br), hh + 2*(emboss_w - br), emboss_h - br]);
+						cube([w + 2*(emboss_w - br), hole_h + 2*(emboss_w - br), emboss_h - br]);
 					sphere(r=br, $fn=16);
 				}
-				translate([emboss_w, emboss_w, -br - 1]) cube([w, hh, emboss_h + br + 2]);
+				translate([emboss_w, emboss_w, -br - 1]) cube([w, hole_h, emboss_h + br + 2]);
 			}
 	}
 
 	if (hole_type == "outlet") {
 		r = 17.4625; cut_y = 14.2875;
-		for (yo = [ph/2 + 19.3915, ph/2 - 19.3915]) {
+		for (yo = [19.3915, -19.3915]) {
 			translate([0, yo, 6])
 				difference() {
 					// Outer D-shell: shrink by br so minkowski restores target dims
@@ -397,7 +404,7 @@ module hole_emboss(hole_type) {
 
 module plate_gang_emboss(n) {
 	top   = top_type(n);
-	x_off = l_offset[plate_size] + switch_offset * n;
+	x_off = l_offset[plate_size] + switch_offset * n - solid_plate_width/2;
 	if (top != "none" && top != "blank") {
 		translate([x_off, 0, 0]) hole_emboss(top);
 	}
