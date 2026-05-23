@@ -31,7 +31,7 @@ module GoAwayCustomizer() {}
  // Static Settings: //
 //////////////////////
 
-fleur_size      = 30;     // size of the corner fleur-de-lis symbols (mm)
+fleur_inset     = 27;     // distance from plate corner to fleur center (mm)
 fleur_scale     = 0.65;   // linear_extrude tip scale for fleur-de-lis (taper effect)
 scroll_scale    = 0.85;   // linear_extrude tip scale for side scrollwork (taper effect)
 scroll_h_offset = 8;      // horizontal distance from center to each scroll element (mm)
@@ -170,8 +170,7 @@ module plate_profile_fleurs() {
 	ph = height_sizes[plate_size];
 	hw = pw / 2;
 	hh = ph / 2;
-	bead_inset = profile_r + 2*bead_r;
-	fi = bead_inset + fleur_size/2;
+	fi = fleur_inset;
 	if (edge_profile == "crown") {
 		// pw along X (gang direction), ph along Y (fixed height)
 		// Fleurs point outward toward their corner (45° diagonals)
@@ -185,7 +184,6 @@ module plate_profile_fleurs() {
 			translate([c[0], c[1], 6])
 				rotate([0, 0, c[2]])
 					linear_extrude(height=bead_r, scale=fleur_scale)
-						resize([fleur_size, fleur_size])
 							import(svg_corner_fleur);
 		}
 	}
@@ -196,11 +194,11 @@ module vertical_scroll() {
 	ph = height_sizes[plate_size];
 	hw = pw / 2;
 	bead_inset = profile_r + 2*bead_r;
-	fi = bead_inset + fleur_size/2;
+	fi = fleur_inset;
 	if (edge_profile == "crown") {
 		svg_w      = 9.7010155;
 		svg_h      = 28.450077;
-		scroll_len = ph - 2*fi - fleur_size;  // gap between inner edges of corner fleurs
+		scroll_len = ph - 2*fi;  // gap between corner fleur centers
 		scroll_w   = fi/2;         // width: constrained to the fleur inset zone
 
 		// Inner edge of scrollwork flush with fi; center = fi - scroll_w/2
@@ -240,7 +238,7 @@ module horizontal_scroll() {
 		ph = height_sizes[plate_size];
 		hh = ph / 2;
 		bead_inset = profile_r + 2*bead_r;
-		fi = bead_inset + fleur_size/2;
+		fi = fleur_inset;
 
 		translate([0,  hh-fi, 6]) h_scroll_pair(315);  // top pair
 		translate([0, -hh+fi, 6]) h_scroll_pair(315);  // bottom pair
