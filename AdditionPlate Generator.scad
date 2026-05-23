@@ -195,7 +195,7 @@ module plate_profile_fleurs() {
 	}
 }
 
-module plate_profile_scroll() {
+module vertical_scroll() {
 	pw = solid_plate_width;
 	ph = height_sizes[plate_size];
 	bead_inset = profile_r + 2*bead_r;
@@ -228,7 +228,7 @@ module plate_profile_scroll() {
 }
 
 // Renders a mirrored scroll pair centered at the origin, for easy group transforms.
-module scroll_pair(rot) {
+module h_scroll_pair(rot) {
 	for (s = [[scroll_h_offset, 1], [-scroll_h_offset, -1]]) {
 		translate([s[0], 0, 0])
 			scale([s[1], 1, 1])
@@ -238,7 +238,7 @@ module scroll_pair(rot) {
 	}
 }
 
-module top_bottom_scroll() {
+module horizontal_scroll() {
 	if (plate_width >= 2) {
 		pw = solid_plate_width;
 		ph = height_sizes[plate_size];
@@ -246,8 +246,8 @@ module top_bottom_scroll() {
 		fi = bead_inset + fleur_size/2;
 		cx = pw / 2;
 
-		translate([cx, ph - fi, 6]) scroll_pair(315);  // top pair
-		translate([cx, fi,      6]) scroll_pair(315);  // bottom pair
+		translate([cx, ph - fi, 6]) h_scroll_pair(315);  // top pair
+		translate([cx, fi,      6]) h_scroll_pair(315);  // bottom pair
 	}
 }
 
@@ -416,8 +416,8 @@ translate([0, 0, 0]) {
 	}
 	color(color_bead)   plate_profile_additions();
 	color(color_fleur)  plate_profile_fleurs();
-	color(color_fleur)  top_bottom_scroll();
-	color(color_scroll) plate_profile_scroll();
+	color(color_fleur)  horizontal_scroll();
+	color(color_scroll) vertical_scroll();
 	color(color_plate)  for (n = [0 : plate_width-1]) plate_gang_emboss(n);
 
 }
