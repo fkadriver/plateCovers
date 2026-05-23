@@ -31,12 +31,11 @@ module GoAwayCustomizer() {}
  // Static Settings: //
 //////////////////////
 
-fleur_hex    = "0049";  // Unicode code point for the fleur-de-lis glyph
-fleur_size   = 30;     // font size of the corner fleur-de-lis symbols (mm)
-j_size       = 17;     // font size of the center "J" letter pair (mm)
-j_offset     = 8;      // horizontal distance from center to each J (mm)
-fleur_scale  = 0.65;   // linear_extrude tip scale for fleur-de-lis (taper effect)
-scroll_scale = 0.85;   // linear_extrude tip scale for side scrollwork (taper effect)
+fleur_hex       = "0049";  // Unicode code point for the fleur-de-lis glyph
+fleur_size      = 30;     // font size of the corner fleur-de-lis symbols (mm)
+fleur_scale     = 0.65;   // linear_extrude tip scale for fleur-de-lis (taper effect)
+scroll_scale    = 0.85;   // linear_extrude tip scale for side scrollwork (taper effect)
+scroll_h_offset = 8;      // horizontal distance from center to each scroll element (mm)
 
 // Color scheme lookup — [plate, bead, fleur, scroll]
 _scheme = color_scheme == "Silver+Gold"    ? ["Silver",      "Goldenrod",   "SaddleBrown", "Sienna"       ] :
@@ -49,7 +48,7 @@ _scheme = color_scheme == "Silver+Gold"    ? ["Silver",      "Goldenrod",   "Sad
 
 color_plate  = _scheme[0];  // main plate body color
 color_bead   = _scheme[1];  // bead rail and accent color
-color_fleur  = _scheme[2];  // fleur-de-lis and center letter color
+color_fleur  = _scheme[2];  // fleur-de-lis and top/bottom scroll color
 color_scroll = _scheme[3];  // side scrollwork color
 
 fleur_font = "Fleur de Lis:style=Regular";  // font used to render the fleur-de-lis glyph
@@ -228,21 +227,18 @@ module plate_profile_scroll() {
 	}
 }
 
-// Renders a mirrored J pair centered at the origin, for easy group transforms.
-// rot: 315 = top (on its back), 45 = bottom (vertically mirrored)
-module letter_pair(rot) {
-	for (s = [[j_offset, 1], [-j_offset, -1]]) {
+// Renders a mirrored scroll pair centered at the origin, for easy group transforms.
+module scroll_pair(rot) {
+	for (s = [[scroll_h_offset, 1], [-scroll_h_offset, -1]]) {
 		translate([s[0], 0, 0])
 			scale([s[1], 1, 1])
 				rotate([0, 0, rot])
 					linear_extrude(height=bead_r, scale=scroll_scale)
-						text("J", size=j_size,
-						     font="Great Vibes:style=Regular",
-						     halign="center", valign="center");
+						import("GV_J.svg");
 	}
 }
 
-module plate_center_letter() {
+module top_bottom_scroll() {
 	if (plate_width >= 2) {
 		pw = solid_plate_width;
 		ph = height_sizes[plate_size];
@@ -250,8 +246,8 @@ module plate_center_letter() {
 		fi = bead_inset + fleur_size/2;
 		cx = pw / 2;
 
-		translate([cx, ph - fi, 6]) letter_pair(315);  // top pair
-		translate([cx, fi,      6]) letter_pair(315);  // bottom pair
+		translate([cx, ph - fi, 6]) scroll_pair(315);  // top pair
+		translate([cx, fi,      6]) scroll_pair(315);  // bottom pair
 	}
 }
 
@@ -420,7 +416,7 @@ translate([0, 0, 0]) {
 	}
 	color(color_bead)   plate_profile_additions();
 	color(color_fleur)  plate_profile_fleurs();
-	color(color_fleur)  plate_center_letter();
+	color(color_fleur)  top_bottom_scroll();
 	color(color_scroll) plate_profile_scroll();
 	color(color_plate)  for (n = [0 : plate_width-1]) plate_gang_emboss(n);
 
