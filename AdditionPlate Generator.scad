@@ -31,11 +31,14 @@ module GoAwayCustomizer() {}
  // Static Settings: //
 //////////////////////
 
-fleur_hex       = "0049";  // Unicode code point for the fleur-de-lis glyph
-fleur_size      = 30;     // font size of the corner fleur-de-lis symbols (mm)
+fleur_size      = 30;     // size of the corner fleur-de-lis symbols (mm)
 fleur_scale     = 0.65;   // linear_extrude tip scale for fleur-de-lis (taper effect)
 scroll_scale    = 0.85;   // linear_extrude tip scale for side scrollwork (taper effect)
 scroll_h_offset = 8;      // horizontal distance from center to each scroll element (mm)
+
+svg_corner_fleur     = "CornerFleur.svg";  // corner fleur-de-lis
+svg_vertical_scroll  = "LeftS.svg";        // left/right side scrollwork
+svg_horizontal_scroll = "GV_J.svg";        // top/bottom center scrollwork
 
 // Color scheme lookup — [plate, bead, fleur, scroll]
 _scheme = color_scheme == "Silver+Gold"    ? ["Silver",      "Goldenrod",   "SaddleBrown", "Sienna"       ] :
@@ -50,18 +53,6 @@ color_plate  = _scheme[0];  // main plate body color
 color_bead   = _scheme[1];  // bead rail and accent color
 color_fleur  = _scheme[2];  // fleur-de-lis and top/bottom scroll color
 color_scroll = _scheme[3];  // side scrollwork color
-
-fleur_font = "Fleur de Lis:style=Regular";  // font used to render the fleur-de-lis glyph
-
-function _hd(c) =
-    c=="0"?0: c=="1"?1: c=="2"?2: c=="3"?3: c=="4"?4:
-    c=="5"?5: c=="6"?6: c=="7"?7: c=="8"?8: c=="9"?9:
-    c=="A"?10: c=="B"?11: c=="C"?12: c=="D"?13: c=="E"?14: c=="F"?15:
-    c=="a"?10: c=="b"?11: c=="c"?12: c=="d"?13: c=="e"?14: c=="f"?15: 0;
-
-function _hex4(s) = _hd(s[0])*4096 + _hd(s[1])*256 + _hd(s[2])*16 + _hd(s[3]);
-
-fleur_symbol = chr(_hex4(fleur_hex));
 
 function top_type(n) =
 	n == 0 ? gang1_top :
@@ -194,9 +185,8 @@ module plate_profile_fleurs() {
 			translate([c[0], c[1], 6])
 				rotate([0, 0, c[2]])
 					linear_extrude(height=bead_r, scale=fleur_scale)
-						text(fleur_symbol, size=fleur_size,
-						     font=fleur_font,
-						     halign="center", valign="center");
+						resize([fleur_size, fleur_size])
+							import(svg_corner_fleur);
 		}
 	}
 }
@@ -222,7 +212,7 @@ module vertical_scroll() {
 				resize([scroll_w, scroll_len])
 					translate([-svg_w/2, -svg_h/2])
 						offset(r=0)
-						import("LeftS.svg");
+						import(svg_vertical_scroll);
 
 		// Right edge: mirror of left
 		translate([hw-scroll_cx, 0, 6])
@@ -230,7 +220,7 @@ module vertical_scroll() {
 				linear_extrude(height=bead_r, scale=scroll_scale)
 					resize([scroll_w, scroll_len])
 						translate([-svg_w/2, -svg_h/2])
-						import("LeftS.svg");
+						import(svg_vertical_scroll);
 	}
 }
 
@@ -241,7 +231,7 @@ module h_scroll_pair(rot) {
 			scale([s[1], 1, 1])
 				rotate([0, 0, rot])
 					linear_extrude(height=bead_r, scale=scroll_scale)
-						import("GV_J.svg");
+						import(svg_horizontal_scroll);
 	}
 }
 
