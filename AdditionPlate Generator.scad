@@ -1,0 +1,427 @@
+// Crown Wall Plate — Fleur de Lis Tester
+// Stripped to 1–2 gangs, top connector only (Rocker / Toggle / Duplex / Blank)
+// Fleur symbol and size are customizer inputs for easy testing.
+
+  //////////////////////////
+ // Customizer Settings: //
+//////////////////////////
+
+// How many gangs?
+plate_width = 2; // [1:2]
+
+// Plate size
+plate_size = 2; // [0:Standard, 1:Junior-Jumbo, 2:Jumbo]
+
+// Edge profile applied to all sides
+edge_profile = "crown"; // ["chamfer":Chamfer, "flat":Flat, "fillet":Fillet, "crown":Crown]
+
+// Gang 1 — connector
+gang1_top = "rocker"; // ["none":None, "blank":Blank, "toggle":Toggle Switch, "rocker":Rocker, "outlet":Duplex Outlet]
+
+// Gang 2 — connector
+gang2_top = "outlet"; // ["none":None, "blank":Blank, "toggle":Toggle Switch, "rocker":Rocker, "outlet":Duplex Outlet]
+
+// Color scheme
+color_scheme = "Distressed"; // ["Silver+Gold":Silver and Gold, "Ivory+Gold":Ivory and Gold, "White+DarkRed":White and Dark Red, "Gray+Brown":Gray and Brown, "Navy+Gold":Navy and Gold, "Black+Gold":Black and Gold, "Distressed":Distressed]
+
+module GoAwayCustomizer() {}
+
+
+  //////////////////////
+ // Static Settings: //
+//////////////////////
+
+fleur_hex    = "0049";  // Unicode code point for the fleur-de-lis glyph
+fleur_size   = 30;     // font size of the corner fleur-de-lis symbols (mm)
+j_size       = 17;     // font size of the center "J" letter pair (mm)
+j_offset     = 8;      // horizontal distance from center to each J (mm)
+fleur_scale  = 0.65;   // linear_extrude tip scale for fleur-de-lis (taper effect)
+scroll_scale = 0.85;   // linear_extrude tip scale for side scrollwork (taper effect)
+
+// Color scheme lookup — [plate, bead, fleur, scroll]
+_scheme = color_scheme == "Silver+Gold"    ? ["Silver",      "Goldenrod",   "SaddleBrown", "Sienna"       ] :
+          color_scheme == "Ivory+Gold"     ? ["Ivory",       "Goldenrod",   "SaddleBrown", "Peru"         ] :
+          color_scheme == "White+DarkRed"  ? ["WhiteSmoke",  "DarkRed",     "DarkRed",     "Maroon"       ] :
+          color_scheme == "Gray+Brown"     ? ["Gray",        "SaddleBrown", "Sienna",      "Chocolate"    ] :
+          color_scheme == "Navy+Gold"      ? ["MidnightBlue","Gold",        "Goldenrod",   "DarkGoldenrod"] :
+          color_scheme == "Distressed"     ? ["Snow",        "DarkGray",    "DimGray",     "SlateGray"    ] :
+                                             ["Black",        "Gold",        "Goldenrod",   "DarkGoldenrod"];
+
+color_plate  = _scheme[0];  // main plate body color
+color_bead   = _scheme[1];  // bead rail and accent color
+color_fleur  = _scheme[2];  // fleur-de-lis and center letter color
+color_scroll = _scheme[3];  // side scrollwork color
+
+fleur_font = "Fleur de Lis:style=Regular";  // font used to render the fleur-de-lis glyph
+
+function _hd(c) =
+    c=="0"?0: c=="1"?1: c=="2"?2: c=="3"?3: c=="4"?4:
+    c=="5"?5: c=="6"?6: c=="7"?7: c=="8"?8: c=="9"?9:
+    c=="A"?10: c=="B"?11: c=="C"?12: c=="D"?13: c=="E"?14: c=="F"?15:
+    c=="a"?10: c=="b"?11: c=="c"?12: c=="d"?13: c=="e"?14: c=="f"?15: 0;
+
+function _hex4(s) = _hd(s[0])*4096 + _hd(s[1])*256 + _hd(s[2])*16 + _hd(s[3]);
+
+fleur_symbol = chr(_hex4(fleur_hex));
+
+function top_type(n) =
+	n == 0 ? gang1_top :
+	n == 1 ? gang2_top : "none";
+
+l_offset      = [34.925, 39.6875, 44.45];   // left margin per plate size [Std, Jr-Jumbo, Jumbo] (mm)
+r_offset      = [34.925, 39.6875, 44.45];   // right margin per plate size (mm)
+switch_offset = 46.0375;                     // center-to-center gang spacing (mm)
+solid_plate_width = l_offset[plate_size] + switch_offset * (plate_width - 1) + r_offset[plate_size];  // total plate width (mm)
+
+height_sizes  = [114.3, 123.825, 133.35];   // plate height per size [Std, Jr-Jumbo, Jumbo] (mm)
+
+edgewidth     = solid_plate_width + 10;      // full width including edge overhang (mm)
+rightbevel    = solid_plate_width - 4;       // right bevel reference X position (mm)
+
+thinner_offset = [0, 0.92, 0.95, 0.96, 0.97, 0.973];  // X/Y scale factors that thin the inner recess per gang count
+
+profile_r = 3;     // radius of the crown edge rounding cylinder/sphere (mm)
+bead_r    = 1.5;   // radius of the inner bead rail (mm)
+emboss_w  = 2;     // embossment border width around each opening
+emboss_h  = 2;     // embossment rise height above plate surface (mm)
+bevel_r   = 0.75;  // minkowski sphere radius for rim edge rounding
+
+// preview[view:north, tilt:bottom]
+
+  /////////////////////
+ // Gang Controller: //
+/////////////////////
+
+module plate_gang(n) {
+	top   = top_type(n);
+	x_off = l_offset[plate_size] + switch_offset * n;
+
+	if (top == "toggle") {
+		translate([x_off, 0, 0]) toggle_screws();
+		translate([x_off, 0, 0]) hole("toggle");
+	}
+	else if (top == "rocker") {
+		translate([x_off, 0, 0]) rocker_screws();
+		translate([x_off, 0, 0]) hole("rocker");
+	}
+	else if (top == "outlet") {
+		translate([x_off, 0, 0]) hole("outlet");
+	}
+	else {
+		// "none" or "blank": screw holes only, no connector cutout
+		translate([x_off, 0, 0]) box_screws();
+	}
+}
+
+  ///////////////////
+ // PlateStation: //
+///////////////////
+
+module plate_profile_cuts() {
+	pw = solid_plate_width;
+	ph = height_sizes[plate_size];
+	e  = 5;
+	r  = profile_r;
+
+	if (edge_profile == "crown") {
+		translate([ 0, -e, 6]) rotate([-90,0,0]) cylinder(r=r,h=ph+e*2,$fn=32);
+		translate([pw, -e, 6]) rotate([-90,0,0]) cylinder(r=r,h=ph+e*2,$fn=32);
+		translate([-e,  0, 6]) rotate([0, 90,0]) cylinder(r=r,h=pw+e*2,$fn=32);
+		translate([-e, ph, 6]) rotate([0, 90,0]) cylinder(r=r,h=pw+e*2,$fn=32);
+		translate([ 0,  0, 6]) sphere(r=r,$fn=32);
+		translate([ 0, ph, 6]) sphere(r=r,$fn=32);
+		translate([pw,  0, 6]) sphere(r=r,$fn=32);
+		translate([pw, ph, 6]) sphere(r=r,$fn=32);
+	}
+	else if (edge_profile == "fillet") {
+		translate([0,-e,6-r]) difference() {
+			cube([r,ph+e*2,r]);
+			translate([r,-1,0]) rotate([-90,0,0]) cylinder(r=r,h=ph+e*2+2,$fn=32);
+		}
+		translate([pw-r,-e,6-r]) difference() {
+			cube([r,ph+e*2,r]);
+			translate([0,-1,0]) rotate([-90,0,0]) cylinder(r=r,h=ph+e*2+2,$fn=32);
+		}
+		translate([-e,0,6-r]) difference() {
+			cube([pw+e*2,r,r]);
+			translate([-1,r,0]) rotate([0,90,0]) cylinder(r=r,h=pw+e*2+2,$fn=32);
+		}
+		translate([-e,ph-r,6-r]) difference() {
+			cube([pw+e*2,r,r]);
+			translate([-1,0,0]) rotate([0,90,0]) cylinder(r=r,h=pw+e*2+2,$fn=32);
+		}
+	}
+}
+
+module plate_profile_additions() {
+	pw = solid_plate_width;
+	ph = height_sizes[plate_size];
+	if (edge_profile == "crown") {
+		bead_inset = profile_r + 2*bead_r;
+		inner_x = pw - 2*bead_inset;
+		inner_y = ph - 2*bead_inset;
+		translate([bead_inset, bead_inset, 6]) rotate([-90,0,0]) cylinder(r=bead_r,h=inner_y,$fn=32);
+		translate([pw-bead_inset, bead_inset, 6]) rotate([-90,0,0]) cylinder(r=bead_r,h=inner_y,$fn=32);
+		translate([bead_inset, bead_inset, 6]) rotate([0, 90,0]) cylinder(r=bead_r,h=inner_x,$fn=32);
+		translate([bead_inset, ph-bead_inset, 6]) rotate([0, 90,0]) cylinder(r=bead_r,h=inner_x,$fn=32);
+		translate([bead_inset,    bead_inset,    6]) sphere(r=bead_r,$fn=32);
+		translate([bead_inset,    ph-bead_inset, 6]) sphere(r=bead_r,$fn=32);
+		translate([pw-bead_inset, bead_inset,    6]) sphere(r=bead_r,$fn=32);
+		translate([pw-bead_inset, ph-bead_inset, 6]) sphere(r=bead_r,$fn=32);
+	}
+}
+
+module plate_profile_fleurs() {
+	pw = solid_plate_width;
+	ph = height_sizes[plate_size];
+	bead_inset = profile_r + 2*bead_r;
+	fi = bead_inset + fleur_size/2;
+	if (edge_profile == "crown") {
+		// pw along X (gang direction), ph along Y (fixed height)
+		// Fleurs point outward toward their corner (45° diagonals)
+		corners = [
+			[fi,    fi,       135],  // bottom-left  → SW
+			[fi,    ph-fi,     45],  // top-left     → NW  (correct)
+			[pw-fi, fi,      -135],  // bottom-right → SE  (correct)
+			[pw-fi, ph-fi,    -45],  // top-right    → NE
+		];
+		for (c = corners) {
+			translate([c[0], c[1], 6])
+				rotate([0, 0, c[2]])
+					linear_extrude(height=bead_r, scale=fleur_scale)
+						text(fleur_symbol, size=fleur_size,
+						     font=fleur_font,
+						     halign="center", valign="center");
+		}
+	}
+}
+
+module plate_profile_scroll() {
+	pw = solid_plate_width;
+	ph = height_sizes[plate_size];
+	bead_inset = profile_r + 2*bead_r;
+	fi = bead_inset + fleur_size/2;
+	if (edge_profile == "crown") {
+		svg_w      = 9.7010155;
+		svg_h      = 28.450077;
+		scroll_len = ph - 2*fi - fleur_size;  // gap between inner edges of corner fleurs
+		scroll_w   = fi/2;         // width: constrained to the fleur inset zone
+
+		// Inner edge of scrollwork flush with fi; center = fi - scroll_w/2
+		scroll_cx = fi - scroll_w/2;
+
+		// Left edge
+		translate([scroll_cx, ph/2, 6])
+			linear_extrude(height=bead_r, scale=scroll_scale)
+				resize([scroll_w, scroll_len])
+					translate([-svg_w/2, -svg_h/2])
+						offset(r=0)
+						import("LeftS.svg");
+
+		// Right edge: mirror of left
+		translate([pw-scroll_cx, ph/2, 6])
+			mirror([1, 0, 0])
+				linear_extrude(height=bead_r, scale=scroll_scale)
+					resize([scroll_w, scroll_len])
+						translate([-svg_w/2, -svg_h/2])
+						import("LeftS.svg");
+	}
+}
+
+// Renders a mirrored J pair centered at the origin, for easy group transforms.
+// rot: 315 = top (on its back), 45 = bottom (vertically mirrored)
+module letter_pair(rot) {
+	for (s = [[j_offset, 1], [-j_offset, -1]]) {
+		translate([s[0], 0, 0])
+			scale([s[1], 1, 1])
+				rotate([0, 0, rot])
+					linear_extrude(height=bead_r, scale=scroll_scale)
+						text("J", size=j_size,
+						     font="Great Vibes:style=Regular",
+						     halign="center", valign="center");
+	}
+}
+
+module plate_center_letter() {
+	if (plate_width >= 2) {
+		pw = solid_plate_width;
+		ph = height_sizes[plate_size];
+		bead_inset = profile_r + 2*bead_r;
+		fi = bead_inset + fleur_size/2;
+		cx = pw / 2;
+
+		translate([cx, ph - fi, 6]) letter_pair(315);  // top pair
+		translate([cx, fi,      6]) letter_pair(315);  // bottom pair
+	}
+}
+
+module plate_body() {
+	difference() {
+		cube([solid_plate_width, height_sizes[plate_size], 6]);
+		plate_profile_cuts();
+	}
+}
+
+module plate_inner() {
+	ts = plate_width < len(thinner_offset)
+	   ? thinner_offset[plate_width]
+	   : thinner_offset[len(thinner_offset)-1];
+	scale([ts, 0.95, 1])
+	translate([3, 3, 0])
+	difference() {
+		cube([solid_plate_width, height_sizes[plate_size], 6]);
+		plate_profile_cuts();
+	}
+}
+
+  ////////////////
+ // Screw Holes //
+////////////////
+
+module box_screws() {
+	translate([0, height_sizes[plate_size]/2 + 41.67125, -1]) cylinder(r=2, h=10, $fn=12);
+	translate([0, height_sizes[plate_size]/2 + 41.67125,  3.5]) cylinder(r1=2, r2=3.3, h=3);
+	translate([0, height_sizes[plate_size]/2 - 41.67125, -1]) cylinder(r=2, h=10, $fn=12);
+	translate([0, height_sizes[plate_size]/2 - 41.67125,  3.5]) cylinder(r1=2, r2=3.3, h=3);
+}
+
+module rocker_screws() {
+	translate([0, height_sizes[plate_size]/2 + 48.41875, -1]) cylinder(r=2, h=10, $fn=12);
+	translate([0, height_sizes[plate_size]/2 + 48.41875,  3.5]) cylinder(r1=2, r2=3.3, h=3);
+	translate([0, height_sizes[plate_size]/2 - 48.41875, -1]) cylinder(r=2, h=10, $fn=12);
+	translate([0, height_sizes[plate_size]/2 - 48.41875,  3.5]) cylinder(r1=2, r2=3.3, h=3);
+}
+
+module toggle_screws() {
+	translate([0, height_sizes[plate_size]/2 + 30.1625, -1]) cylinder(r=2, h=10, $fn=12);
+	translate([0, height_sizes[plate_size]/2 + 30.1625,  3.5]) cylinder(r1=2, r2=3.3, h=3);
+	translate([0, height_sizes[plate_size]/2 - 30.1625, -1]) cylinder(r=2, h=10, $fn=12);
+	translate([0, height_sizes[plate_size]/2 - 30.1625,  3.5]) cylinder(r1=2, r2=3.3, h=3);
+}
+
+  ///////////////////
+ // Hole Cutouts: //
+///////////////////
+
+module hole(hole_type) {
+
+	if (hole_type == "toggle") {
+		translate([0, height_sizes[plate_size]/2, 0]) cube([10.3188, 23.8125, 15], center=true);
+	}
+
+	if (hole_type == "rocker") {
+		translate([0, height_sizes[plate_size]/2, 0]) cube([33.3, 67.1, 15], center=true);
+	}
+
+	if (hole_type == "outlet") {
+		translate([0, height_sizes[plate_size]/2 + 19.3915, 0])
+			difference() {
+				cylinder(r=17.4625, h=15, center=true);
+				translate([-15,-24.2875,-2]) cube([37,10,15]);
+				translate([-15, 14.2875,-2]) cube([37,10,15]);
+			}
+		translate([0, height_sizes[plate_size]/2 - 19.3915, 0])
+			difference() {
+				cylinder(r=17.4625, h=15, center=true);
+				translate([-15,-24.2875,-2]) cube([37,10,15]);
+				translate([-15, 14.2875,-2]) cube([37,10,15]);
+			}
+		translate([0, height_sizes[plate_size]/2, -1]) cylinder(r=2, h=10);
+		translate([0, height_sizes[plate_size]/2,  3.5]) cylinder(r1=2, r2=3.3, h=3);
+	}
+
+	// "blank" and "none": no cutout
+}
+
+  ///////////////////////////
+ // Opening Embossments:  //
+///////////////////////////
+
+// D-shape used by outlet holes: cylinder clipped flat at ±cut_y
+module _outlet_dshape(r, cut_y, h) {
+	difference() {
+		cylinder(r=r, h=h, $fn=64);
+		translate([-(r+5),  cut_y,           -1]) cube([2*(r+5), r+5, h+2]);
+		translate([-(r+5), -(cut_y + r + 5), -1]) cube([2*(r+5), r+5, h+2]);
+	}
+}
+
+// Raised rim around a single connector opening (no screw holes).
+// Outer shell is a Minkowski sum with sphere(bevel_r) to round all top/side
+// edges; the inner cutout stays straight so the opening stays crisp.
+module hole_emboss(hole_type) {
+	ph = height_sizes[plate_size];
+	br = bevel_r;
+
+	if (hole_type == "toggle") {
+		w = 10.3188; hh = 23.8125;
+		// local origin = outer-frame corner; bottom of frame is at z=6
+		translate([-w/2 - emboss_w, ph/2 - hh/2 - emboss_w, 6])
+			difference() {
+				// Outer shell: shrink core by br so minkowski expands back to emboss_w
+				minkowski() {
+					translate([br, br, 0])
+						cube([w + 2*(emboss_w - br), hh + 2*(emboss_w - br), emboss_h - br]);
+					sphere(r=br, $fn=16);
+				}
+				// Inner cutout: straight walls flush with hole edge
+				translate([emboss_w, emboss_w, -br - 1]) cube([w, hh, emboss_h + br + 2]);
+			}
+	}
+
+	if (hole_type == "rocker") {
+		w = 33.3; hh = 67.1;
+		translate([-w/2 - emboss_w, ph/2 - hh/2 - emboss_w, 6])
+			difference() {
+				minkowski() {
+					translate([br, br, 0])
+						cube([w + 2*(emboss_w - br), hh + 2*(emboss_w - br), emboss_h - br]);
+					sphere(r=br, $fn=16);
+				}
+				translate([emboss_w, emboss_w, -br - 1]) cube([w, hh, emboss_h + br + 2]);
+			}
+	}
+
+	if (hole_type == "outlet") {
+		r = 17.4625; cut_y = 14.2875;
+		for (yo = [ph/2 + 19.3915, ph/2 - 19.3915]) {
+			translate([0, yo, 6])
+				difference() {
+					// Outer D-shell: shrink by br so minkowski restores target dims
+					minkowski() {
+						_outlet_dshape(r + emboss_w - br, cut_y + emboss_w - br, emboss_h - br);
+						sphere(r=br, $fn=16);
+					}
+					// Inner cutout: straight D-shape flush with hole edge
+					translate([0, 0, -br - 1]) _outlet_dshape(r, cut_y, emboss_h + br + 2);
+				}
+		}
+	}
+}
+
+module plate_gang_emboss(n) {
+	top   = top_type(n);
+	x_off = l_offset[plate_size] + switch_offset * n;
+	if (top != "none" && top != "blank") {
+		translate([x_off, 0, 0]) hole_emboss(top);
+	}
+}
+
+  ////////////////////////
+ // Number One ENGAGE: //
+////////////////////////
+
+translate([0, 0, 0]) {
+
+	color(color_plate) difference() {
+		plate_body();
+		translate([0, 0, -3]) plate_inner();
+		for (n = [0 : plate_width-1]) plate_gang(n);
+	}
+	color(color_bead)   plate_profile_additions();
+	color(color_fleur)  plate_profile_fleurs();
+	color(color_fleur)  plate_center_letter();
+	color(color_scroll) plate_profile_scroll();
+	color(color_plate)  for (n = [0 : plate_width-1]) plate_gang_emboss(n);
+
+}
