@@ -1,0 +1,18 @@
+{
+    "fileFormatVersion": "1",
+    "parameterSets": {
+        "New set 1": {
+            "color_scheme": "Distressed",
+            "edge_profile": "crown",
+            "gang1_top": "rocker",
+            "gang2_top": "outlet",
+            "gang3_top": "none",
+            "gang4_top": "none",
+            "plate_size": "2",
+            "plate_width": "2",
+            "show_fleurs": "true",
+            "show_horizontal_scroll": "false",
+            "show_vertical_scroll": "false"
+        }
+    }
+}

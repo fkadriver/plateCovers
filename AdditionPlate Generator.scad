@@ -38,6 +38,9 @@ show_vertical_scroll = true;
 // Show horizontal top/bottom scrollwork
 show_horizontal_scroll = true;
 
+// Debug: show additions bounding box
+debug = false;
+
 module GoAwayCustomizer() {}
 
 
@@ -106,6 +109,7 @@ face_inset = edge_profile == "crown"   ? bead_inset :
              0;
 face_x = solid_plate_width/2 - face_inset;      // inner face half-width  (mm)
 face_y = height_sizes[plate_size]/2 - face_inset; // inner face half-height (mm)
+//cube([face_x*2, face_y*2, plate_thickness*3], center=true);
 
 // Fleur center position measured from plate center
 // = face edge − fleur_inset gap − full SVG footprint (SVG is centered at its own origin)
@@ -419,5 +423,10 @@ translate([0, 0, 0]) {
 	                          color(color_fleur)  horizontal_scroll();
 	if (show_vertical_scroll) color(color_scroll) vertical_scroll();
 	color(color_plate)  for (n = [0 : plate_width-1]) plate_gang_emboss(n);
+
+	if (debug)
+		color("Red", 0.3)
+			translate([0, 0, plate_thickness])
+				cube([2*face_x, 2*face_y, 2*plate_thickness], center=true);
 
 }
