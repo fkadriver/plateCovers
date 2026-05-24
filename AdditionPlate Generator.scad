@@ -406,6 +406,43 @@ module plate_gang_emboss(n) {
 	}
 }
 
+  /////////////////////
+ // Debug BBoxes:   //
+/////////////////////
+
+module debug_fleur_boxes() {
+	corners = [
+		[-fleur_cx, -fleur_cy,   135],
+		[-fleur_cx,  fleur_cy,    45],
+		[ fleur_cx, -fleur_cy,  -135],
+		[ fleur_cx,  fleur_cy,   -45],
+	];
+	for (c = corners)
+		color("Cyan", 0.3)
+			translate([c[0], c[1], plate_thickness])
+				rotate([0, 0, c[2]])
+					cube([svg_CornerFleur_w, svg_CornerFleur_h, 2*plate_thickness], center=true);
+}
+
+module debug_vscroll_boxes() {
+	scroll_len = 2 * fleur_cy;
+	scroll_w   = fleur_inset * 0.75;
+	scroll_cx  = face_x - scroll_w / 2;
+	for (sx = [-scroll_cx, scroll_cx])
+		color("Green", 0.3)
+			translate([sx, 0, plate_thickness])
+				cube([scroll_w, scroll_len, 2*plate_thickness], center=true);
+}
+
+module debug_hscroll_boxes() {
+	for (sy = [fleur_cy, -fleur_cy])
+		for (s = [[scroll_h_offset, 1], [-scroll_h_offset, -1]])
+			color("Yellow", 0.3)
+				translate([s[0], sy, plate_thickness])
+					rotate([0, 0, 315])
+						cube([svg_GV_J_w, svg_GV_J_h, 2*plate_thickness], center=true);
+}
+
   ////////////////////////
  // Number One ENGAGE: //
 ////////////////////////
@@ -424,9 +461,8 @@ translate([0, 0, 0]) {
 	if (show_vertical_scroll) color(color_scroll) vertical_scroll();
 	color(color_plate)  for (n = [0 : plate_width-1]) plate_gang_emboss(n);
 
-	if (debug)
-		color("Red", 0.3)
-			translate([0, 0, plate_thickness])
-				cube([2*face_x, 2*face_y, 2*plate_thickness], center=true);
+	if (debug && show_fleurs)                                    debug_fleur_boxes();
+	if (debug && show_vertical_scroll)                           debug_vscroll_boxes();
+	if (debug && show_horizontal_scroll && plate_width >= 2)     debug_hscroll_boxes();
 
 }
