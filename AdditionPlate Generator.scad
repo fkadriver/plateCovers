@@ -31,7 +31,7 @@ module GoAwayCustomizer() {}
  // Static Settings: //
 //////////////////////
 
-fleur_inset     = 27;     // distance from plate corner to fleur center (mm)
+fleur_inset     = 33;     // distance from plate corner to fleur center (mm)
 fleur_scale     = 0.65;   // linear_extrude tip scale for fleur-de-lis (taper effect)
 scroll_scale    = 0.85;   // linear_extrude tip scale for side scrollwork (taper effect)
 scroll_h_offset = 8;      // horizontal distance from center to each scroll element (mm)
@@ -116,29 +116,29 @@ module plate_profile_cuts() {
 	r  = profile_r;
 
 	if (edge_profile == "crown") {
-		translate([-hw, -e, 6]) rotate([-90,0,0]) cylinder(r=r,h=ph+e*2,$fn=32);
-		translate([ hw, -e, 6]) rotate([-90,0,0]) cylinder(r=r,h=ph+e*2,$fn=32);
-		translate([-e, -hh, 6]) rotate([0, 90,0]) cylinder(r=r,h=pw+e*2,$fn=32);
-		translate([-e,  hh, 6]) rotate([0, 90,0]) cylinder(r=r,h=pw+e*2,$fn=32);
+		translate([-hw, -hh-e, 6]) rotate([-90,0,0]) cylinder(r=r,h=ph+e*2,$fn=32);
+		translate([ hw, -hh-e, 6]) rotate([-90,0,0]) cylinder(r=r,h=ph+e*2,$fn=32);
+		translate([-hw-e, -hh, 6]) rotate([0, 90,0]) cylinder(r=r,h=pw+e*2,$fn=32);
+		translate([-hw-e,  hh, 6]) rotate([0, 90,0]) cylinder(r=r,h=pw+e*2,$fn=32);
 		translate([-hw, -hh, 6]) sphere(r=r,$fn=32);
 		translate([-hw,  hh, 6]) sphere(r=r,$fn=32);
 		translate([ hw, -hh, 6]) sphere(r=r,$fn=32);
 		translate([ hw,  hh, 6]) sphere(r=r,$fn=32);
 	}
 	else if (edge_profile == "fillet") {
-		translate([-hw,-e,6-r]) difference() {
+		translate([-hw,-hh-e,6-r]) difference() {
 			cube([r,ph+e*2,r]);
 			translate([r,-1,0]) rotate([-90,0,0]) cylinder(r=r,h=ph+e*2+2,$fn=32);
 		}
-		translate([hw-r,-e,6-r]) difference() {
+		translate([hw-r,-hh-e,6-r]) difference() {
 			cube([r,ph+e*2,r]);
 			translate([0,-1,0]) rotate([-90,0,0]) cylinder(r=r,h=ph+e*2+2,$fn=32);
 		}
-		translate([-e,-hh,6-r]) difference() {
+		translate([-hw-e,-hh,6-r]) difference() {
 			cube([pw+e*2,r,r]);
 			translate([-1,r,0]) rotate([0,90,0]) cylinder(r=r,h=pw+e*2+2,$fn=32);
 		}
-		translate([-e,hh-r,6-r]) difference() {
+		translate([-hw-e,hh-r,6-r]) difference() {
 			cube([pw+e*2,r,r]);
 			translate([-1,0,0]) rotate([0,90,0]) cylinder(r=r,h=pw+e*2+2,$fn=32);
 		}
@@ -198,7 +198,7 @@ module vertical_scroll() {
 	if (edge_profile == "crown") {
 		svg_w      = 9.7010155;
 		svg_h      = 28.450077;
-		scroll_len = ph - 2*fi;  // gap between corner fleur centers
+		scroll_len = ph - 2*fi - fi/2;  // gap between corner fleurs with margin
 		scroll_w   = fi/2;         // width: constrained to the fleur inset zone
 
 		// Inner edge of scrollwork flush with fi; center = fi - scroll_w/2
