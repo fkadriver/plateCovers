@@ -1,13 +1,12 @@
-// Crown Wall Plate — Fleur de Lis Tester
-// Stripped to 1–2 gangs, top connector only (Rocker / Toggle / Duplex / Blank)
-// Fleur symbol and size are customizer inputs for easy testing.
+// Crown Wall Plate Cover Generator
+// 1–4 gangs, top connector per gang (Rocker / Toggle / Duplex / Blank / None)
 
   //////////////////////////
  // Customizer Settings: //
 //////////////////////////
 
 // How many gangs?
-plate_width = 2; // [1:2]
+plate_width = 2; // [1:4]
 
 // Plate size
 plate_size = 2; // [0:Standard, 1:Junior-Jumbo, 2:Jumbo]
@@ -21,8 +20,23 @@ gang1_top = "rocker"; // ["none":None, "blank":Blank, "toggle":Toggle Switch, "r
 // Gang 2 — connector
 gang2_top = "outlet"; // ["none":None, "blank":Blank, "toggle":Toggle Switch, "rocker":Rocker, "outlet":Duplex Outlet]
 
+// Gang 3 — connector (ignored when plate_width < 3)
+gang3_top = "none"; // ["none":None, "blank":Blank, "toggle":Toggle Switch, "rocker":Rocker, "outlet":Duplex Outlet]
+
+// Gang 4 — connector (ignored when plate_width < 4)
+gang4_top = "none"; // ["none":None, "blank":Blank, "toggle":Toggle Switch, "rocker":Rocker, "outlet":Duplex Outlet]
+
 // Color scheme
 color_scheme = "Distressed"; // ["Silver+Gold":Silver and Gold, "Ivory+Gold":Ivory and Gold, "White+DarkRed":White and Dark Red, "Gray+Brown":Gray and Brown, "Navy+Gold":Navy and Gold, "Black+Gold":Black and Gold, "Distressed":Distressed]
+
+// Show corner fleur-de-lis ornaments
+show_fleurs = true;
+
+// Show vertical side scrollwork
+show_vertical_scroll = true;
+
+// Show horizontal top/bottom scrollwork
+show_horizontal_scroll = true;
 
 module GoAwayCustomizer() {}
 
@@ -31,7 +45,7 @@ module GoAwayCustomizer() {}
  // Static Settings: //
 //////////////////////
 
-fleur_inset     = 40;     // distance from plate corner to fleur center (mm)
+fleur_inset     = 5;     // gap from inner face edge to nearest edge of fleur SVG (mm)
 fleur_scale     = 0.95;   // linear_extrude tip scale for fleur-de-lis (taper effect)
 scroll_scale    = 0.95;   // linear_extrude tip scale for side scrollwork (taper effect)
 scroll_h_offset = 8;      // horizontal distance from center to each scroll element (mm)
@@ -59,7 +73,9 @@ color_scroll = _scheme[3];  // side scrollwork color
 
 function top_type(n) =
 	n == 0 ? gang1_top :
-	n == 1 ? gang2_top : "none";
+	n == 1 ? gang2_top :
+	n == 2 ? gang3_top :
+	n == 3 ? gang4_top : "none";
 
 l_offset      = [34.925, 39.6875, 44.45];   // left margin per plate size [Std, Jr-Jumbo, Jumbo] (mm)
 r_offset      = [34.925, 39.6875, 44.45];   // right margin per plate size (mm)
@@ -73,11 +89,28 @@ rightbevel    = solid_plate_width - 4;       // right bevel reference X position
 
 thinner_offset = [0, 0.92, 0.95, 0.96, 0.97, 0.973];  // X/Y scale factors that thin the inner recess per gang count
 
-profile_r = 3;     // radius of the crown edge rounding cylinder/sphere (mm)
-bead_r    = 1.5;   // radius of the inner bead rail (mm)
-emboss_w  = 2;     // embossment border width around each opening
-emboss_h  = 2;     // embossment rise height above plate surface (mm)
-bevel_r   = 0.75;  // minkowski sphere radius for rim edge rounding
+profile_r       = 3;     // radius of the crown edge rounding cylinder/sphere (mm)
+bead_r          = 1.5;   // radius of the inner bead rail (mm)
+emboss_w        = 2;     // embossment border width around each opening
+emboss_h        = 2;     // embossment rise height above plate surface (mm)
+bevel_r         = 0.75;  // minkowski sphere radius for rim edge rounding
+plate_thickness = 6;     // total plate body thickness (mm)
+
+// Innermost edge treatment distance from plate edge (used for all profiles)
+bead_inset = profile_r + 2*bead_r;  // crown: bead-center inset from edge (mm)
+
+// Half-distance from plate center to the blank inner face (inside all edge treatments)
+face_inset = edge_profile == "crown"   ? bead_inset :
+             edge_profile == "chamfer" ? profile_r  :
+             edge_profile == "fillet"  ? profile_r  :
+             0;
+face_x = solid_plate_width/2 - face_inset;      // inner face half-width  (mm)
+face_y = height_sizes[plate_size]/2 - face_inset; // inner face half-height (mm)
+
+// Fleur center position measured from plate center
+// = face edge − fleur_inset gap − full SVG footprint (SVG is centered at its own origin)
+fleur_cx = face_x - fleur_inset - svg_CornerFleur_w;
+fleur_cy = face_y - fleur_inset - svg_CornerFleur_h;
 
 // preview[view:north, tilt:bottom]
 
@@ -119,29 +152,29 @@ module plate_profile_cuts() {
 	r  = profile_r;
 
 	if (edge_profile == "crown") {
-		translate([-hw, -hh-e, 6]) rotate([-90,0,0]) cylinder(r=r,h=ph+e*2,$fn=32);
-		translate([ hw, -hh-e, 6]) rotate([-90,0,0]) cylinder(r=r,h=ph+e*2,$fn=32);
-		translate([-hw-e, -hh, 6]) rotate([0, 90,0]) cylinder(r=r,h=pw+e*2,$fn=32);
-		translate([-hw-e,  hh, 6]) rotate([0, 90,0]) cylinder(r=r,h=pw+e*2,$fn=32);
-		translate([-hw, -hh, 6]) sphere(r=r,$fn=32);
-		translate([-hw,  hh, 6]) sphere(r=r,$fn=32);
-		translate([ hw, -hh, 6]) sphere(r=r,$fn=32);
-		translate([ hw,  hh, 6]) sphere(r=r,$fn=32);
+		translate([-hw, -hh-e, plate_thickness]) rotate([-90,0,0]) cylinder(r=r,h=ph+e*2,$fn=32);
+		translate([ hw, -hh-e, plate_thickness]) rotate([-90,0,0]) cylinder(r=r,h=ph+e*2,$fn=32);
+		translate([-hw-e, -hh, plate_thickness]) rotate([0, 90,0]) cylinder(r=r,h=pw+e*2,$fn=32);
+		translate([-hw-e,  hh, plate_thickness]) rotate([0, 90,0]) cylinder(r=r,h=pw+e*2,$fn=32);
+		translate([-hw, -hh, plate_thickness]) sphere(r=r,$fn=32);
+		translate([-hw,  hh, plate_thickness]) sphere(r=r,$fn=32);
+		translate([ hw, -hh, plate_thickness]) sphere(r=r,$fn=32);
+		translate([ hw,  hh, plate_thickness]) sphere(r=r,$fn=32);
 	}
 	else if (edge_profile == "fillet") {
-		translate([-hw,-hh-e,6-r]) difference() {
+		translate([-hw,-hh-e,plate_thickness-r]) difference() {
 			cube([r,ph+e*2,r]);
 			translate([r,-1,0]) rotate([-90,0,0]) cylinder(r=r,h=ph+e*2+2,$fn=32);
 		}
-		translate([hw-r,-hh-e,6-r]) difference() {
+		translate([hw-r,-hh-e,plate_thickness-r]) difference() {
 			cube([r,ph+e*2,r]);
 			translate([0,-1,0]) rotate([-90,0,0]) cylinder(r=r,h=ph+e*2+2,$fn=32);
 		}
-		translate([-hw-e,-hh,6-r]) difference() {
+		translate([-hw-e,-hh,plate_thickness-r]) difference() {
 			cube([pw+e*2,r,r]);
 			translate([-1,r,0]) rotate([0,90,0]) cylinder(r=r,h=pw+e*2+2,$fn=32);
 		}
-		translate([-hw-e,hh-r,6-r]) difference() {
+		translate([-hw-e,hh-r,plate_thickness-r]) difference() {
 			cube([pw+e*2,r,r]);
 			translate([-1,0,0]) rotate([0,90,0]) cylinder(r=r,h=pw+e*2+2,$fn=32);
 		}
@@ -154,68 +187,50 @@ module plate_profile_additions() {
 	hw = pw / 2;
 	hh = ph / 2;
 	if (edge_profile == "crown") {
-		bead_inset = profile_r + 2*bead_r;
 		inner_x = pw - 2*bead_inset;
 		inner_y = ph - 2*bead_inset;
-		translate([-hw+bead_inset, -hh+bead_inset, 6]) rotate([-90,0,0]) cylinder(r=bead_r,h=inner_y,$fn=32);
-		translate([ hw-bead_inset, -hh+bead_inset, 6]) rotate([-90,0,0]) cylinder(r=bead_r,h=inner_y,$fn=32);
-		translate([-hw+bead_inset, -hh+bead_inset, 6]) rotate([0, 90,0]) cylinder(r=bead_r,h=inner_x,$fn=32);
-		translate([-hw+bead_inset,  hh-bead_inset, 6]) rotate([0, 90,0]) cylinder(r=bead_r,h=inner_x,$fn=32);
-		translate([-hw+bead_inset, -hh+bead_inset, 6]) sphere(r=bead_r,$fn=32);
-		translate([-hw+bead_inset,  hh-bead_inset, 6]) sphere(r=bead_r,$fn=32);
-		translate([ hw-bead_inset, -hh+bead_inset, 6]) sphere(r=bead_r,$fn=32);
-		translate([ hw-bead_inset,  hh-bead_inset, 6]) sphere(r=bead_r,$fn=32);
+		translate([-hw+bead_inset, -hh+bead_inset, plate_thickness]) rotate([-90,0,0]) cylinder(r=bead_r,h=inner_y,$fn=32);
+		translate([ hw-bead_inset, -hh+bead_inset, plate_thickness]) rotate([-90,0,0]) cylinder(r=bead_r,h=inner_y,$fn=32);
+		translate([-hw+bead_inset, -hh+bead_inset, plate_thickness]) rotate([0, 90,0]) cylinder(r=bead_r,h=inner_x,$fn=32);
+		translate([-hw+bead_inset,  hh-bead_inset, plate_thickness]) rotate([0, 90,0]) cylinder(r=bead_r,h=inner_x,$fn=32);
+		translate([-hw+bead_inset, -hh+bead_inset, plate_thickness]) sphere(r=bead_r,$fn=32);
+		translate([-hw+bead_inset,  hh-bead_inset, plate_thickness]) sphere(r=bead_r,$fn=32);
+		translate([ hw-bead_inset, -hh+bead_inset, plate_thickness]) sphere(r=bead_r,$fn=32);
+		translate([ hw-bead_inset,  hh-bead_inset, plate_thickness]) sphere(r=bead_r,$fn=32);
 	}
 }
 
 module plate_profile_fleurs() {
-	pw = solid_plate_width;
-	ph = height_sizes[plate_size];
-	hw = pw / 2;
-	hh = ph / 2;
-	fi = fleur_inset;
-	if (edge_profile == "crown") {
-		// pw along X (gang direction), ph along Y (fixed height)
-		// Fleurs point outward toward their corner (45° diagonals)
-		corners = [
-			[-hw+fi, -hh+fi,   135],  // bottom-left  → SW
-			[-hw+fi,  hh-fi,    45],  // top-left     → NW
-			[ hw-fi, -hh+fi,  -135],  // bottom-right → SE
-			[ hw-fi,  hh-fi,   -45],  // top-right    → NE
-		];
-		for (c = corners) {
-			translate([c[0], c[1], 6])
-				rotate([0, 0, c[2]])
-					linear_extrude(height=bead_r, scale=fleur_scale)
-							import(svg_corner_fleur);
-		}
+	// fleur_cx/fleur_cy are distances from plate center to fleur SVG center
+	corners = [
+		[-fleur_cx, -fleur_cy,   135],  // bottom-left  → SW
+		[-fleur_cx,  fleur_cy,    45],  // top-left     → NW
+		[ fleur_cx, -fleur_cy,  -135],  // bottom-right → SE
+		[ fleur_cx,  fleur_cy,   -45],  // top-right    → NE
+	];
+	for (c = corners) {
+		translate([c[0], c[1], plate_thickness])
+			rotate([0, 0, c[2]])
+				linear_extrude(height=bead_r, scale=fleur_scale)
+					import(svg_corner_fleur);
 	}
 }
 
 module vertical_scroll() {
-	pw = solid_plate_width;
-	ph = height_sizes[plate_size];
-	hw = pw / 2;
-	bead_inset = profile_r + 2*bead_r;
-	fi = fleur_inset;
-	if (edge_profile == "crown") {
-		scroll_len = ph - 2*fi - fi/2;  // gap between corner fleurs with margin
-		scroll_w   = fi/2;              // width: constrained to the fleur inset zone
-		scroll_cx  = fi - scroll_w/2;  // inner edge flush with fi
+	scroll_len = 2 * fleur_cy;          // spans between the two fleur Y-centers
+	scroll_w   = fleur_inset * 0.75;    // fits within the inset zone
+	scroll_cx  = face_x - scroll_w / 2; // right edge at face boundary
 
-		// Left edge
-		translate([-hw+scroll_cx, 0, 6])
+	translate([-scroll_cx, 0, plate_thickness])
+		linear_extrude(height=bead_r, scale=scroll_scale)
+			resize([scroll_w, scroll_len])
+				import(svg_vertical_scroll);
+
+	translate([scroll_cx, 0, plate_thickness])
+		mirror([1, 0, 0])
 			linear_extrude(height=bead_r, scale=scroll_scale)
 				resize([scroll_w, scroll_len])
 					import(svg_vertical_scroll);
-
-		// Right edge: mirror of left
-		translate([hw-scroll_cx, 0, 6])
-			mirror([1, 0, 0])
-				linear_extrude(height=bead_r, scale=scroll_scale)
-					resize([scroll_w, scroll_len])
-						import(svg_vertical_scroll);
-	}
 }
 
 // Renders a mirrored scroll pair centered at the origin, for easy group transforms.
@@ -230,22 +245,15 @@ module h_scroll_pair(rot) {
 }
 
 module horizontal_scroll() {
-	if (plate_width >= 2) {
-		ph = height_sizes[plate_size];
-		hh = ph / 2;
-		bead_inset = profile_r + 2*bead_r;
-		fi = fleur_inset;
-
-		translate([0,  hh-fi, 6]) h_scroll_pair(315);  // top pair
-		translate([0, -hh+fi, 6]) h_scroll_pair(315);  // bottom pair
-	}
+	translate([0,  fleur_cy, plate_thickness]) h_scroll_pair(315);  // top pair
+	translate([0, -fleur_cy, plate_thickness]) h_scroll_pair(315);  // bottom pair
 }
 
 module plate_body() {
 	pw = solid_plate_width;
 	ph = height_sizes[plate_size];
 	difference() {
-		translate([-pw/2, -ph/2, 0]) cube([pw, ph, 6]);
+		translate([-pw/2, -ph/2, 0]) cube([pw, ph, plate_thickness]);
 		plate_profile_cuts();
 	}
 }
@@ -258,7 +266,7 @@ module plate_inner() {
 	   : thinner_offset[len(thinner_offset)-1];
 	scale([ts, 0.95, 1])
 	difference() {
-		translate([-pw/2, -ph/2, 0]) cube([pw, ph, 6]);
+		translate([-pw/2, -ph/2, 0]) cube([pw, ph, plate_thickness]);
 		plate_profile_cuts();
 	}
 }
@@ -343,7 +351,7 @@ module hole_emboss(hole_type) {
 
 	if (hole_type == "toggle") {
 		w = 10.3188; hole_h = 23.8125;
-		translate([-w/2 - emboss_w, -hole_h/2 - emboss_w, 6])
+		translate([-w/2 - emboss_w, -hole_h/2 - emboss_w, plate_thickness])
 			difference() {
 				// Outer shell: shrink core by br so minkowski expands back to emboss_w
 				minkowski() {
@@ -358,7 +366,7 @@ module hole_emboss(hole_type) {
 
 	if (hole_type == "rocker") {
 		w = 33.3; hole_h = 67.1;
-		translate([-w/2 - emboss_w, -hole_h/2 - emboss_w, 6])
+		translate([-w/2 - emboss_w, -hole_h/2 - emboss_w, plate_thickness])
 			difference() {
 				minkowski() {
 					translate([br, br, 0])
@@ -372,7 +380,7 @@ module hole_emboss(hole_type) {
 	if (hole_type == "outlet") {
 		r = 17.4625; cut_y = 14.2875;
 		for (yo = [19.3915, -19.3915]) {
-			translate([0, yo, 6])
+			translate([0, yo, plate_thickness])
 				difference() {
 					// Outer D-shell: shrink by br so minkowski restores target dims
 					minkowski() {
@@ -405,10 +413,11 @@ translate([0, 0, 0]) {
 		translate([0, 0, -3]) plate_inner();
 		for (n = [0 : plate_width-1]) plate_gang(n);
 	}
-	color(color_bead)   plate_profile_additions();
-	color(color_fleur)  plate_profile_fleurs();
-	color(color_fleur)  horizontal_scroll();
-	color(color_scroll) vertical_scroll();
+	color(color_bead)                              plate_profile_additions();
+	if (show_fleurs)          color(color_fleur)  plate_profile_fleurs();
+	if (show_horizontal_scroll && plate_width >= 2)
+	                          color(color_fleur)  horizontal_scroll();
+	if (show_vertical_scroll) color(color_scroll) vertical_scroll();
 	color(color_plate)  for (n = [0 : plate_width-1]) plate_gang_emboss(n);
 
 }
