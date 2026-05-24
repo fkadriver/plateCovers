@@ -421,26 +421,37 @@ module debug_fleur_boxes() {
 		color("Cyan", 0.3)
 			translate([c[0], c[1], plate_thickness])
 				rotate([0, 0, c[2]])
-					cube([svg_CornerFleur_w, svg_CornerFleur_h, 2*plate_thickness], center=true);
+					translate([svg_CornerFleur_x, svg_CornerFleur_y, 0])
+						cube([svg_CornerFleur_w, svg_CornerFleur_h, 2*plate_thickness]);
 }
 
 module debug_vscroll_boxes() {
 	scroll_len = 2 * fleur_cy;
 	scroll_w   = fleur_inset * 0.75;
 	scroll_cx  = face_x - scroll_w / 2;
-	for (sx = [-scroll_cx, scroll_cx])
-		color("Green", 0.3)
-			translate([sx, 0, plate_thickness])
-				cube([scroll_w, scroll_len, 2*plate_thickness], center=true);
+	s_x = scroll_w   / svg_LeftS_w;
+	s_y = scroll_len / svg_LeftS_h;
+	color("Green", 0.3)
+		translate([-scroll_cx, 0, plate_thickness])
+			translate([svg_LeftS_x * s_x, svg_LeftS_y * s_y, 0])
+				cube([scroll_w, scroll_len, 2*plate_thickness]);
+	color("Green", 0.3)
+		translate([scroll_cx, 0, plate_thickness])
+			mirror([1, 0, 0])
+				translate([svg_LeftS_x * s_x, svg_LeftS_y * s_y, 0])
+					cube([scroll_w, scroll_len, 2*plate_thickness]);
 }
 
 module debug_hscroll_boxes() {
-	for (sy = [fleur_cy, -fleur_cy])
+	for (sy_pos = [fleur_cy, -fleur_cy])
 		for (s = [[scroll_h_offset, 1], [-scroll_h_offset, -1]])
 			color("Yellow", 0.3)
-				translate([s[0], sy, plate_thickness])
-					rotate([0, 0, 315])
-						cube([svg_GV_J_w, svg_GV_J_h, 2*plate_thickness], center=true);
+				translate([0, sy_pos, plate_thickness])
+					translate([s[0], 0, 0])
+						scale([s[1], 1, 1])
+							rotate([0, 0, 315])
+								translate([svg_GV_J_x, svg_GV_J_y, 0])
+									cube([svg_GV_J_w, svg_GV_J_h, 2*plate_thickness]);
 }
 
   ////////////////////////
