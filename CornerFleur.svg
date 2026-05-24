@@ -1,7 +1,7 @@
 <?xml version="1.0" standalone="no"?>
 <!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
-<svg width="24mm" height="30mm" viewBox="-12 -15 24 30" xmlns="http://www.w3.org/2000/svg" version="1.1">
-<title>OpenSCAD Model</title>
+<svg width="24mm" height="30mm" xmlns="http://www.w3.org/2000/svg" version="1.1">
+<title>Corner Fleur</title>
 <path d="
 M 0.229416,14.2053 L 0.347672,14.0146 L 0.52446,13.6968 L 0.759796,13.2518 L 1.60609,12.3428 L 2.2106,11.4669
  L 2.5733,10.624 L 2.6942,9.81412 L 2.6942,8.87872 L 2.28259,7.24344 L 1.9886,5.99699 L 1.81219,5.13939

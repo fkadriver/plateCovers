@@ -1,7 +1,8 @@
 <?xml version="1.0" standalone="no"?>
 <!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
-<svg width="35mm" height="30mm" viewBox="-14 -15 35 30" xmlns="http://www.w3.org/2000/svg" version="1.1">
-<title>OpenSCAD Model</title>
+<svg width="35mm" height="30mm" xmlns="http://www.w3.org/2000/svg" version="1.1">
+<title>GV_J</title>
+<g transform="translate(-3.3463, 0.1203)">
 <path d="
 M -3.24545,14.642 L -1.60963,14.3444 L -0.0331726,13.8483 L 1.48392,13.1538 L 2.93854,12.2773 L 4.32751,11.2351
  L 5.65086,10.0274 L 6.90858,8.65399 L 8.09755,7.13147 L 9.21465,5.47614 L 10.2599,3.68797 L 11.2333,1.76701
@@ -46,4 +47,5 @@ M 17.5712,-13.1577 L 17.761,-13.36 L 17.9523,-13.5639 L 18.1453,-13.7693 L 18.33
  L 19.0858,-13.767 L 19.0202,-13.6476 L 18.9109,-13.5233 L 18.7578,-13.3944 L 18.5406,-13.2686 L 18.2391,-13.1538
  L 17.8532,-13.0499 L 17.383,-12.957 z
 " stroke="black" fill="lightgray" stroke-width="0.5"/>
+</g>
 </svg>
