@@ -2,7 +2,8 @@
   "permissions": {
     "allow": [
       "Bash(python3 generate_svg_dims.py)",
-      "Bash(git commit -m ' *)"
+      "Bash(git commit -m ' *)",
+      "Bash(python3 -c ' *)"
     ]
   }
 }

@@ -38,6 +38,12 @@ show_vertical_scroll = true;
 // Show horizontal top/bottom scrollwork
 show_horizontal_scroll = true;
 
+// Apply distressed surface texture to plate face
+show_texture = true;
+
+// Depth of surface texture relief (mm)
+texture_depth = 0.3; // [0.1:0.05:0.6]
+
 // Debug: show additions bounding box
 debug = false;
 
@@ -461,6 +467,14 @@ module debug_hscroll_boxes() {
 				cube([scroll_len, scroll_w, bead_r], center=true);
 }
 
+module plate_texture() {
+	w = face_x * 2;
+	h = face_y * 2;
+	translate([0, 0, plate_thickness - texture_depth])
+		scale([w / 1024, h / 1024, texture_depth / 255])
+			surface(file="surface.jpg", center=true, invert=false);
+}
+
   ////////////////////////
  // Number One ENGAGE: //
 ////////////////////////
@@ -471,6 +485,7 @@ translate([0, 0, 0]) {
 		plate_body();
 		translate([0, 0, -3]) plate_inner();
 		for (n = [0 : plate_width-1]) plate_gang(n);
+		if (show_texture) plate_texture();
 	}
 	color(color_bead)                              plate_profile_additions();
 	if (show_fleurs)          color(color_fleur)  plate_profile_fleurs();
