@@ -421,8 +421,8 @@ module debug_fleur_boxes() {
 		color("Cyan", 0.3)
 			translate([c[0], c[1], plate_thickness])
 				rotate([0, 0, c[2]])
-					translate([svg_CornerFleur_x, svg_CornerFleur_y, 0])
-						cube([svg_CornerFleur_w, svg_CornerFleur_h, 2*plate_thickness]);
+					translate([svg_CornerFleur_x, -(svg_CornerFleur_y + svg_CornerFleur_h), 0])
+						cube([svg_CornerFleur_w, svg_CornerFleur_h, bead_r]);
 }
 
 module debug_vscroll_boxes() {
@@ -433,13 +433,13 @@ module debug_vscroll_boxes() {
 	s_y = scroll_len / svg_LeftS_h;
 	color("Green", 0.3)
 		translate([-scroll_cx, 0, plate_thickness])
-			translate([svg_LeftS_x * s_x, svg_LeftS_y * s_y, 0])
-				cube([scroll_w, scroll_len, 2*plate_thickness]);
+			translate([svg_LeftS_x * s_x, -(svg_LeftS_y + svg_LeftS_h) * s_y, 0])
+				cube([scroll_w, scroll_len, bead_r]);
 	color("Green", 0.3)
 		translate([scroll_cx, 0, plate_thickness])
 			mirror([1, 0, 0])
-				translate([svg_LeftS_x * s_x, svg_LeftS_y * s_y, 0])
-					cube([scroll_w, scroll_len, 2*plate_thickness]);
+				translate([svg_LeftS_x * s_x, -(svg_LeftS_y + svg_LeftS_h) * s_y, 0])
+					cube([scroll_w, scroll_len, bead_r]);
 }
 
 module debug_hscroll_boxes() {
@@ -450,8 +450,8 @@ module debug_hscroll_boxes() {
 					translate([s[0], 0, 0])
 						scale([s[1], 1, 1])
 							rotate([0, 0, 315])
-								translate([svg_GV_J_x, svg_GV_J_y, 0])
-									cube([svg_GV_J_w, svg_GV_J_h, 2*plate_thickness]);
+								translate([svg_GV_J_x, -(svg_GV_J_y + svg_GV_J_h), 0])
+									cube([svg_GV_J_w, svg_GV_J_h, bead_r]);
 }
 
   ////////////////////////
