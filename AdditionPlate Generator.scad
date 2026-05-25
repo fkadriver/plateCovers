@@ -449,17 +449,16 @@ module debug_vscroll_boxes() {
 }
 
 module debug_hscroll_boxes() {
-	echo("=== H-Scroll (GV_J.svg) ===");
-	echo("  scroll_h_offset:", scroll_h_offset, "  at y = ±", fleur_cy);
-	echo("  svg w:", svg_GV_J_w, "  h:", svg_GV_J_h);
-	for (sy_pos = [fleur_cy, -fleur_cy])
-		for (s = [[scroll_h_offset, 1], [-scroll_h_offset, -1]])
-			color("Yellow", 0.3)
-				translate([0, sy_pos, plate_thickness])
-					translate([s[0], 0, 0])
-						scale([s[1], 1, 1])
-							rotate([0, 0, 315])
-								cube([svg_GV_J_w, svg_GV_J_h, bead_r], center=true);
+	scroll_len = fleur_cx * 2;
+	scroll_w   = svg_CornerFleur_w / 2;
+	scroll_cy  = face_y - scroll_w / 2 - 2;
+	echo("=== H-Scroll (Horizontal_scroll.svg) ===");
+	echo("  scroll_len:", scroll_len, "  scroll_w:", scroll_w, "  at y = ±", scroll_cy);
+	echo("  svg w:", svg_Horizontal_scroll_w, "  h:", svg_Horizontal_scroll_h);
+	for (sy_pos = [scroll_cy, -scroll_cy])
+		color("Yellow", 0.3)
+			translate([0, sy_pos, plate_thickness])
+				cube([scroll_len, scroll_w, bead_r], center=true);
 }
 
   ////////////////////////
