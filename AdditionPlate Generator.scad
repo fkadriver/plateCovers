@@ -111,9 +111,8 @@ face_x = solid_plate_width/2 - face_inset;      // inner face half-width  (mm)
 face_y = height_sizes[plate_size]/2 - face_inset; // inner face half-height (mm)
 //cube([face_x*2, face_y*2, plate_thickness*3], center=true);
 
-// Fleur SVG bbox anchor (lower-left corner of the content, before rotation).
-// OpenSCAD places SVG content so its bbox min is at (0,0), so the anchor is
-// the translate point.  Right edge lands at face_x − fleur_inset; top at face_y − fleur_inset.
+// Fleur translate point = center of the SVG content in OpenSCAD space (Y-flip preserves
+// the SVG's origin, so all three SVGs are centered near (0,0)).
 fleur_cx = face_x - fleur_inset - svg_CornerFleur_w;
 fleur_cy = face_y - fleur_inset - svg_CornerFleur_h;
 
@@ -428,28 +427,24 @@ module debug_fleur_boxes() {
 		color("Cyan", 0.3)
 			translate([c[0], c[1], plate_thickness])
 				rotate([0, 0, c[2]])
-					cube([svg_CornerFleur_w, svg_CornerFleur_h, bead_r]);
+					cube([svg_CornerFleur_w, svg_CornerFleur_h, bead_r], center=true);
 }
 
 module debug_vscroll_boxes() {
 	scroll_len = 2 * fleur_cy;
 	scroll_w   = fleur_inset * 0.75;
 	scroll_cx  = face_x - scroll_w / 2;
-	s_x = scroll_w   / svg_LeftS_w;
-	s_y = scroll_len / svg_LeftS_h;
 	echo("=== V-Scroll (LeftS.svg) ===");
 	echo("  scroll_cx:", scroll_cx, "  scroll_w:", scroll_w, "  scroll_len:", scroll_len);
 	echo("  svg w:", svg_LeftS_w, "  h:", svg_LeftS_h,
-	     "  scale_x:", s_x, "  scale_y:", s_y);
+	     "  resize_x:", scroll_w/svg_LeftS_w, "  resize_y:", scroll_len/svg_LeftS_h);
 	color("Green", 0.3)
 		translate([-scroll_cx, 0, plate_thickness])
-			translate([svg_LeftS_x * s_x, -(svg_LeftS_y + svg_LeftS_h) * s_y, 0])
-				cube([scroll_w, scroll_len, bead_r]);
+			cube([scroll_w, scroll_len, bead_r], center=true);
 	color("Green", 0.3)
 		translate([scroll_cx, 0, plate_thickness])
 			mirror([1, 0, 0])
-				translate([svg_LeftS_x * s_x, -(svg_LeftS_y + svg_LeftS_h) * s_y, 0])
-					cube([scroll_w, scroll_len, bead_r]);
+				cube([scroll_w, scroll_len, bead_r], center=true);
 }
 
 module debug_hscroll_boxes() {
@@ -463,8 +458,7 @@ module debug_hscroll_boxes() {
 					translate([s[0], 0, 0])
 						scale([s[1], 1, 1])
 							rotate([0, 0, 315])
-								translate([svg_GV_J_x, -(svg_GV_J_y + svg_GV_J_h), 0])
-									cube([svg_GV_J_w, svg_GV_J_h, bead_r]);
+								cube([svg_GV_J_w, svg_GV_J_h, bead_r], center=true);
 }
 
   ////////////////////////
