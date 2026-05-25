@@ -111,8 +111,9 @@ face_x = solid_plate_width/2 - face_inset;      // inner face half-width  (mm)
 face_y = height_sizes[plate_size]/2 - face_inset; // inner face half-height (mm)
 //cube([face_x*2, face_y*2, plate_thickness*3], center=true);
 
-// Fleur center position measured from plate center
-// = face edge − fleur_inset gap − full SVG footprint (SVG is centered at its own origin)
+// Fleur SVG bbox anchor (lower-left corner of the content, before rotation).
+// OpenSCAD places SVG content so its bbox min is at (0,0), so the anchor is
+// the translate point.  Right edge lands at face_x − fleur_inset; top at face_y − fleur_inset.
 fleur_cx = face_x - fleur_inset - svg_CornerFleur_w;
 fleur_cy = face_y - fleur_inset - svg_CornerFleur_h;
 
@@ -411,6 +412,12 @@ module plate_gang_emboss(n) {
 /////////////////////
 
 module debug_fleur_boxes() {
+	echo("=== Fleur (CornerFleur.svg) ===");
+	echo("  face_x:", face_x, "  face_y:", face_y);
+	echo("  fleur_inset:", fleur_inset);
+	echo("  fleur_cx:", fleur_cx, "  fleur_cy:", fleur_cy,
+	     "  (bbox right:", fleur_cx+svg_CornerFleur_w, "  top:", fleur_cy+svg_CornerFleur_h, ")");
+	echo("  svg w:", svg_CornerFleur_w, "  h:", svg_CornerFleur_h);
 	corners = [
 		[-fleur_cx, -fleur_cy,   135],
 		[-fleur_cx,  fleur_cy,    45],
@@ -421,8 +428,7 @@ module debug_fleur_boxes() {
 		color("Cyan", 0.3)
 			translate([c[0], c[1], plate_thickness])
 				rotate([0, 0, c[2]])
-					translate([svg_CornerFleur_x, -(svg_CornerFleur_y + svg_CornerFleur_h), 0])
-						cube([svg_CornerFleur_w, svg_CornerFleur_h, bead_r]);
+					cube([svg_CornerFleur_w, svg_CornerFleur_h, bead_r]);
 }
 
 module debug_vscroll_boxes() {
@@ -431,6 +437,10 @@ module debug_vscroll_boxes() {
 	scroll_cx  = face_x - scroll_w / 2;
 	s_x = scroll_w   / svg_LeftS_w;
 	s_y = scroll_len / svg_LeftS_h;
+	echo("=== V-Scroll (LeftS.svg) ===");
+	echo("  scroll_cx:", scroll_cx, "  scroll_w:", scroll_w, "  scroll_len:", scroll_len);
+	echo("  svg w:", svg_LeftS_w, "  h:", svg_LeftS_h,
+	     "  scale_x:", s_x, "  scale_y:", s_y);
 	color("Green", 0.3)
 		translate([-scroll_cx, 0, plate_thickness])
 			translate([svg_LeftS_x * s_x, -(svg_LeftS_y + svg_LeftS_h) * s_y, 0])
@@ -443,6 +453,9 @@ module debug_vscroll_boxes() {
 }
 
 module debug_hscroll_boxes() {
+	echo("=== H-Scroll (GV_J.svg) ===");
+	echo("  scroll_h_offset:", scroll_h_offset, "  at y = ±", fleur_cy);
+	echo("  svg w:", svg_GV_J_w, "  h:", svg_GV_J_h);
 	for (sy_pos = [fleur_cy, -fleur_cy])
 		for (s = [[scroll_h_offset, 1], [-scroll_h_offset, -1]])
 			color("Yellow", 0.3)
