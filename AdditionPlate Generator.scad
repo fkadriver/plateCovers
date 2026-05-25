@@ -113,7 +113,7 @@ face_y = height_sizes[plate_size]/2 - face_inset; // inner face half-height (mm)
 
 // Fleur translate point = center of the SVG content in OpenSCAD space (Y-flip preserves
 // the SVG's origin, so all three SVGs are centered near (0,0)).
-fleur_cx = face_x - fleur_inset - svg_CornerFleur_w;
+fleur_cx = face_x - fleur_inset - svg_CornerFleur_w - 6;
 fleur_cy = face_y - fleur_inset - svg_CornerFleur_h;
 
 // preview[view:north, tilt:bottom]
@@ -221,20 +221,20 @@ module plate_profile_fleurs() {
 }
 
 module vertical_scroll() {
-	scroll_len = 2 * fleur_cy;          // spans between the two fleur Y-centers
-	scroll_w   = fleur_inset * 0.75;    // fits within the inset zone
-	scroll_cx  = face_x - scroll_w / 2; // right edge at face boundary
+	scroll_len = fleur_cy * 2.5;          // spans between the two fleur Y-centers
+	scroll_w   = svg_CornerFleur_w - plate_thickness;    // fits within the inset zone
+	scroll_cx  = face_x - scroll_w / 2 -2; // right edge at face boundary
 
 	translate([-scroll_cx, 0, plate_thickness])
 		linear_extrude(height=bead_r, scale=scroll_scale)
 			resize([scroll_w, scroll_len])
-				import(svg_vertical_scroll);
+				import(svg_vertical_scroll, center=true);
 
 	translate([scroll_cx, 0, plate_thickness])
 		mirror([1, 0, 0])
 			linear_extrude(height=bead_r, scale=scroll_scale)
 				resize([scroll_w, scroll_len])
-					import(svg_vertical_scroll);
+					import(svg_vertical_scroll, center=true);
 }
 
 // Renders a mirrored scroll pair centered at the origin, for easy group transforms.
@@ -427,7 +427,7 @@ module debug_fleur_boxes() {
 		color("Cyan", 0.3)
 			translate([c[0], c[1], plate_thickness])
 				rotate([0, 0, c[2]])
-					cube([svg_CornerFleur_w, svg_CornerFleur_h, bead_r], center=true);
+					cube([svg_CornerFleur_w, svg_CornerFleur_h, bead_r]);
 }
 
 module debug_vscroll_boxes() {
