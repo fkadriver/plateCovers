@@ -471,8 +471,8 @@ module plate_texture() {
 	w = face_x * 2;
 	h = face_y * 2;
 	translate([0, 0, plate_thickness - texture_depth])
-		scale([w / 1024, h / 1024, texture_depth / 255])
-			surface(file="surface.jpg", center=true, invert=false);
+		scale([w / 1024, h / 1024, (texture_depth + 1) / 255])
+			surface(file="surface.png", center=true, invert=true);
 }
 
   ////////////////////////
