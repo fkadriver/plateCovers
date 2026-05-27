@@ -94,9 +94,9 @@ thinner_offset = [0, 0.92, 0.95, 0.96, 0.97, 0.973];  // X/Y scale factors that 
 
 profile_r       = 3;     // radius of the crown edge rounding cylinder/sphere (mm)
 bead_r          = 1.5;   // radius of the inner bead rail (mm)
-emboss_w        = 2;     // embossment border width around each opening
+emboss_w        = 3;     // embossment border width around each opening
 emboss_h        = 2;     // embossment rise height above plate surface (mm)
-bevel_r         = 0.75;  // minkowski sphere radius for rim edge rounding
+bevel_r         = 1.75;  // minkowski sphere radius for rim edge rounding
 plate_thickness = 6;     // total plate body thickness (mm)
 
 // Innermost edge treatment distance from plate edge (used for all profiles)
@@ -236,7 +236,6 @@ module vertical_scroll() {
 				resize([scroll_w, scroll_len])
 					import(svg_vertical_scroll, center=true);
 }
-
 
 module horizontal_scroll() {
     scroll_len = fleur_cx * 2;

@@ -41,6 +41,20 @@
             "show_fleurs": "true",
             "show_horizontal_scroll": "true",
             "show_vertical_scroll": "true"
+        },
+        "New set 4": {
+            "color_scheme": "Distressed",
+            "debug": "false",
+            "edge_profile": "crown",
+            "gang1_top": "rocker",
+            "gang2_top": "none",
+            "gang3_top": "none",
+            "gang4_top": "none",
+            "plate_size": "2",
+            "plate_width": "2",
+            "show_fleurs": "true",
+            "show_horizontal_scroll": "true",
+            "show_vertical_scroll": "true"
         }
     }
 }
